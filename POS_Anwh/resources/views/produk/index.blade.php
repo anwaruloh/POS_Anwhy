@@ -21,11 +21,42 @@
 
         {{-- Form Pencarian --}}
         <form action="{{ route('admin.produk.index') }}" method="GET" class="mb-4">
-            <div class="input-group" style="max-width: 350px;">
-                <input type="text" name="search" class="form-control rounded-start-3" placeholder="Cari nama produk..." value="{{ request('search') }}">
-                <button class="btn btn-outline-secondary px-3 rounded-end-3" type="submit">Cari</button>
+    <div class="row g-2">
+        
+        <div class="col-md-3">
+            <select name="kategori_id" class="form-select" onchange="this.form.submit()">
+                <option value="">-- Semua Kategori --</option>
+                @foreach($kategoris as $kategori)
+                    <option value="{{ $kategori->id }}" {{ request('kategori_id') == $kategori->id ? 'selected' : '' }}>
+                        {{ $kategori->nama_kategori }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="col-md-5">
+            <div class="input-group">
+                <input type="text" 
+                       name="search" 
+                       class="form-control" 
+                       placeholder="Cari nama produk (contoh: BRT, Uma Racing)..." 
+                       value="{{ request('search') }}">
+                <button type="submit" class="btn btn-primary px-4">
+                    🔍 Cari
+                </button>
             </div>
-        </form>
+        </div>
+
+        @if(request('kategori_id') || request('search'))
+            <div class="col-md-2">
+                <a href="{{ route('admin.produk.index') }}" class="btn btn-outline-secondary w-100">
+                    🔄 Reset Filter
+                </a>
+            </div>
+        @endif
+
+    </div>
+</form>
 
         {{-- Tabel Data Produk --}}
         <div class="table-responsive">

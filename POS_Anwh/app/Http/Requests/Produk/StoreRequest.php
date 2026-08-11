@@ -23,20 +23,18 @@ class StoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'foto' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
             'name' => 'required|string|max:255',
             'purchase_price' => 'required|integer|min:0',
             'selling_price' => 'required|integer|min:0',
             'stock' => 'required|integer|min:0',
+            'kategori_id' => 'required|exists:kategoris,id',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'foto.image' => 'File yang diupload harus gambar.',
-            'foto.mimes' => 'Extensi gambar harus JPG, JPEG, PNG.',
-            'foto.max' => 'Maksimal ukuran gambar 2MB.',
             'name.required' => 'Nama Wajib diisi.',
             'email.email' => 'Format email tidak valid.',
             'purchase_price.required' => 'purchase price wajib diisi.',
@@ -45,6 +43,14 @@ class StoreRequest extends FormRequest
             'selling_price.integer' => 'selling price harus diisi bilangan bulat.',
             'stock.required' => 'Stock wajib diisi.',
             'stock.integer' => 'Stock harus diisi angka.',
+            'kategori_id.required' => 'Kategori wajib dipilih.',
+            'kategori_id.exists' => 'Kategori yang dipilih tidak valid.',
+
+            // Pesan Validasi Foto
+            'foto.required'           => 'Gambar wajib diisi.',
+            'foto.image'              => 'File yang diunggah harus berupa gambar.',
+            'foto.mimes'              => 'Format gambar harus jpeg, png, jpg, atau webp.',
+            'foto.max'                => 'Ukuran gambar maksimal 2MB.',
         ];
     }
 }

@@ -24,6 +24,7 @@ class SearchRequest extends FormRequest
     {
         return [
             'search' => 'nullable|string|max:100',
+            'kategori_id' => 'nullable|exists:kategoris,id',
         ];
     }
 }

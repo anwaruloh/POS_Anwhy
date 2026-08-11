@@ -8,6 +8,7 @@ use App\Http\Controllers\PenjualanController;
 use App\Http\Controllers\ProdukController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SuplierController;
+use App\Http\Controllers\KategoriController;
 
 // Redirect halaman utama ke login
 Route::get('/', function () {
@@ -23,6 +24,7 @@ Route::middleware('guest')->group(function () {
 // Route yang bisa diakses ketika user sudah login (Auth)
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
+    Route::get('/about', [DashboardController::class, 'about'])->name('about');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // Group Khusus Admin
@@ -34,6 +36,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/users/update/{user}', [UserController::class, 'update'])->name('users.update');
         Route::delete('/users/destroy/{user}', [UserController::class, 'destroy'])->name('users.destroy');
         Route::resource('/produk', ProdukController::class);
+        Route::resource('kategori', KategoriController::class)->except(['create', 'show', 'edit', 'update']);
     });
 
     // Group Produk (Bisa diakses Admin & Kasir)

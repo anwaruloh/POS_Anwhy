@@ -46,24 +46,39 @@ class PenjualanController extends Controller
      */
     public function create(SearchRequest $request)
     {
-        // 1. Cari transaksi 'OPEN' aktif milik kasir yang sedang login (tanpa membuat baru jika belum ada)
+        // 1. Cari transaksi 'OPEN' aktif milik kasir yang sedang login
         $sale = Penjualan::where('user_id', Auth::id())
             ->where('status', 'OPEN')
             ->latest()
             ->first();
 
-        // 2. Pencarian produk yang lebih ringkas
+        // 2. Ambil parameter filter dari request AJAX / HTTP
         $keyword = $request->input('search');
+        $kategoriId = $request->input('kategori_id');
 
-        $products = Produk::when($keyword, function ($query) use ($keyword) {
-            $query->where('nama', 'like', '%' . $keyword . '%');
-        })
+        // 3. Query produk + Eager Loading relasi kategori + Filter Search & Kategori
+        $products = Produk::with('kategori')
+            ->when($keyword, function ($query) use ($keyword) {
+                $query->where('nama', 'like', '%' . $keyword . '%');
+            })
+            ->when($kategoriId, function ($query) use ($kategoriId) {
+                $query->where('kategori_id', $kategoriId);
+            })
             ->orderBy('nama')
             ->get();
 
+        // 4. Ambil semua data kategori untuk dropdown filter di Blade
+        $categories = \App\Models\Kategori::orderBy('nama_kategori')->get();
+
+        // 5. Jika request via AJAX (saat kasir mengetik / memilih filter kategori)
+        if ($request->ajax()) {
+            return view('penjualan.partials.produk_list', compact('products'))->render();
+        }
+
         $mode = 'create';
 
-        return view('penjualan.pos', compact('sale', 'products', 'mode'));
+        // 6. Tampilkan halaman POS utama
+        return view('penjualan.pos', compact('sale', 'products', 'categories', 'mode'));
     }
 
     /**
@@ -98,10 +113,15 @@ class PenjualanController extends Controller
         abort_if($sale->status === 'COMPLETED', 403);
 
         $sale->load('itemPenjualan');
-        $products = Produk::orderBy('nama')->get();
+        $products = Produk::with('kategori')->orderBy('nama')->get(); // 1. (Opsional) Tambahkan with('kategori')
+
+        // 2. TAMBAHKAN BARIS INI: Ambil data kategori
+        $categories = \App\Models\Kategori::orderBy('nama_kategori')->get();
+
         $mode = 'edit';
 
-        return view('penjualan.pos', compact('sale', 'products', 'mode'));
+        // 3. UBAH DI SINI: Tambahkan 'categories' ke dalam compact()
+        return view('penjualan.pos', compact('sale', 'products', 'categories', 'mode'));
     }
 
     /**
@@ -154,34 +174,40 @@ class PenjualanController extends Controller
      */
     public function destroy(Penjualan $penjualan)
     {
-        $this->authorize('delete', $penjualan);
+        // $this->authorize('delete', $penjualan);
 
-        // ❗ Pastikan hanya transaksi OPEN
-        if ($penjualan->status !== 'OPEN') {
-            return redirect()->route('penjualan.create')->with('errors', 'Transaksi sudah selesai tidak bisa dibatalkan');
+        // 1. Tolak penghapusan HANYA jika status transaksi sudah selesai (COMPLETED / SELESAI)
+        if (in_array(strtoupper($penjualan->status), ['COMPLETED', 'SELESAI'])) {
+            return redirect()
+                ->route('penjualan.index')
+                ->with('error', 'Transaksi yang sudah selesai tidak dapat dihapus');
         }
 
-        // ❗ Pastikan milik user login (kasir)
+        // 2. Cek kepemilikan user (redirect tetap di halaman riwayat jika gagal)
         if ($penjualan->user_id !== Auth::id()) {
-            return redirect()->route('penjualan.create');
+            return redirect()
+                ->route('penjualan.index')
+                ->with('error', 'Anda tidak memiliki akses untuk menghapus transaksi ini');
         }
 
+        // 3. Eksekusi Hapus dan Kembalikan Stok
         DB::transaction(function () use ($penjualan) {
-
             foreach ($penjualan->itemPenjualan as $item) {
-                // ⏫ kembalikan stok
-                $item->produk->increment('stok', $item->kuantitas);
+                // ⏫ Kembalikan stok
+                if ($item->produk) {
+                    $item->produk->increment('stok', $item->kuantitas);
+                }
             }
 
-            // ❌ hapus item
+            // ❌ Hapus detail item
             $penjualan->itemPenjualan()->delete();
 
-            // ❌ hapus penjualan
+            // ❌ Hapus data penjualan utama
             $penjualan->delete();
         });
 
         return redirect()
             ->route('penjualan.index')
-            ->with('success', 'Transaksi berhasil dibatalkan');
+            ->with('success', 'Transaksi berhasil dihapus');
     }
 }

@@ -57,4 +57,9 @@ class DashboardController extends Controller
             'produkTerlaris'
         ));
     }
+
+    public function about()
+    {
+        return view('about.index');
+    }
 }
