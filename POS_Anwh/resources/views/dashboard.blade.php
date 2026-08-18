@@ -12,10 +12,7 @@
         <h4 class="fw-bold mb-0">Dashboard Ringkasan</h4>
         <span class="text-muted small">{{ \Carbon\Carbon::now()->isoFormat('D MMMM Y') }}</span>
     </div>
-
-    {{-- ================================================================= --}}
-    {{-- 1. TAMPILAN KHUSUS ADMIN (TETAP SEPERTI SEMULA / LENGKAP)         --}}
-    {{-- ================================================================= --}}
+    {{-- 1. TAMPILAN KHUSUS ADMIN (TETAP SEPERTI SEMULA / LENGKAP)--}}
     @if($userRole === 'admin')
         
         {{-- Card Stats 4 Kolom --}}

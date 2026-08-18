@@ -20,7 +20,7 @@ return new class extends Migration
             $table->integer('harga_jual');
             $table->integer('stok');
             $table->index('nama');
-            $table->foreignId('kategori_id')->nullable()->after('id')->constrained('kategoris')->onDelete('set null');
+            $table->foreignId('kategori_id')->nullable()->constrained('kategoris')->onDelete('set null');
             $table->timestamps();
         });
     }

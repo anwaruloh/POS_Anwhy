@@ -73,9 +73,9 @@
             </a>
         </li>
 
-        @auth
+         {{-- @auth
             @if($userRole === 'admin')
-                {{-- 7. Suplier (Khusus Admin) --}}
+                {{-- 7. Suplier (Khusus Admin)
                 <li class="nav-item">
                     <a href="{{ route('suplier.index') }}" 
                         class="nav-link d-flex align-items-center gap-2 {{ request()->routeIs('suplier.index*') ? 'active' : '' }}">
@@ -84,7 +84,7 @@
                     </a>
                 </li>
             @endif
-        @endauth
+        @endauth --}}
 
     </ul>
 

@@ -69,7 +69,7 @@ class ProdukController extends Controller
         $dataReq = $request->validated();
 
         $data['user_id']     = Auth::id();
-        $data['kategori_id'] = $request->kategori_id ?? null; // Simpan kategori_id
+        $data['kategori_id'] = $dataReq['kategori_id'] ?? null; // Simpan kategori_id
         $data['nama']        = $dataReq['nama'] ?? $dataReq['name'] ?? null;
         $data['harga_beli']  = $dataReq['purchase_price'] ?? $dataReq['harga_beli'] ?? 0;
         $data['harga_jual']  = $dataReq['selling_price'] ?? $dataReq['harga_jual'] ?? 0;
@@ -154,7 +154,7 @@ class ProdukController extends Controller
 
             return redirect()->route('admin.produk.index')->with('success', 'Produk berhasil dihapus.');
         } catch (\Illuminate\Database\QueryException $e) {
-            return redirect()->route('produk.index')
+            return redirect()->route('admin.produk.index')
                 ->with('error', 'Gagal menghapus! Produk ini sudah terikat dengan riwayat transaksi penjualan.');
         }
     }

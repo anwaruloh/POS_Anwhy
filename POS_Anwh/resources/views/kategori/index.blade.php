@@ -1,5 +1,7 @@
 @extends('layout.app') {{-- Sesuaikan dengan layout kamu --}}
 
+@section('title', 'Kelola Kategori')
+
 @section('content')
 <div class="container py-4">
     <h3 class="mb-4">Kelola Kategori Produk</h3>
