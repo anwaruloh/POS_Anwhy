@@ -1,0 +1,56 @@
+<?php
+
+namespace App\Http\Requests\Produk;
+
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Foundation\Http\FormRequest;
+
+class StoreRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        return [
+            'foto' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
+            'name' => 'required|string|max:255',
+            'purchase_price' => 'required|integer|min:0',
+            'selling_price' => 'required|integer|min:0',
+            'stock' => 'required|integer|min:0',
+            'kategori_id' => 'required|exists:kategoris,id',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'Nama Wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'purchase_price.required' => 'purchase price wajib diisi.',
+            'purchase_price.integer' => 'purchase price harus diisi bilangan bulat.',
+            'selling_price.required' => 'selling price wajib diisi.',
+            'selling_price.integer' => 'selling price harus diisi bilangan bulat.',
+            'stock.required' => 'Stock wajib diisi.',
+            'stock.integer' => 'Stock harus diisi angka.',
+            'kategori_id.required' => 'Kategori wajib dipilih.',
+            'kategori_id.exists' => 'Kategori yang dipilih tidak valid.',
+
+            // Pesan Validasi Foto
+            'foto.required'           => 'Gambar wajib diisi.',
+            'foto.image'              => 'File yang diunggah harus berupa gambar.',
+            'foto.mimes'              => 'Format gambar harus jpeg, png, jpg, atau webp.',
+            'foto.max'                => 'Ukuran gambar maksimal 2MB.',
+        ];
+    }
+}
