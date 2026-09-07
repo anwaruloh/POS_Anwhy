@@ -77,8 +77,12 @@
                         <tr>
                             <td>{{ $produks->firstItem() + $index }}</td>
                             <td>
-                                @if($produk->foto)
-                                    <img src="{{ asset('storage/' . $produk->foto) }}" alt="{{ $produk->nama }}" class="rounded-2 object-fit-cover" width="40" height="40">
+                               @if($produk->foto)
+                                    <img src="{{ asset('storage/' . $produk->foto) }}" 
+                                        alt="{{ $produk->nama }}" 
+                                        class="rounded-2 object-fit-cover" 
+                                        width="40" 
+                                        height="40">
                                 @else
                                     <div class="bg-light rounded-2 d-flex align-items-center justify-content-center text-muted" style="width: 40px; height: 40px; font-size: 0.75rem;">
                                         No Pic

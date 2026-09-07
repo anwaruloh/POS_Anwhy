@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Produk\StoreRequest;
 use App\Http\Requests\Produk\UpdateRequest;
 use App\Http\Requests\SearchRequest;
-use App\Models\Kategori; // 1. Ditambahkan: Import model Kategori
+use App\Models\Kategori;
 use App\Models\Produk;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -75,13 +75,15 @@ class ProdukController extends Controller
         $data['harga_jual']  = $dataReq['selling_price'] ?? $dataReq['harga_jual'] ?? 0;
         $data['stok']        = $dataReq['stock'] ?? $dataReq['stok'] ?? 0;
 
+        // Cek jika ada file foto baru yang diunggah
         if ($request->hasFile('foto')) {
-            $data['foto'] = $request->file('foto')->store('products', 'public');
+            $data['foto'] = $request->file('foto')->store('produk', 'public');
         }
 
+        // Simpan data produk baru ke database
         Produk::create($data);
 
-        return redirect()->route('admin.produk.index')->with('success', 'Produk berhasil ditambahkan.');
+        return redirect()->route('produk.index')->with('success', 'Produk berhasil ditambahkan!');
     }
 
     /**
