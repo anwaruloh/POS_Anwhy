@@ -115,6 +115,10 @@
             </form>
         @endif
 
+        <a href="{{ route('penjualan.cetak', $sale->id) }}" target="_blank" class="btn btn-sm btn-secondary">
+            Cetak Struk
+        </a>
+
     </div>
 </td>
                         </tr>

@@ -210,4 +210,13 @@ class PenjualanController extends Controller
             ->route('penjualan.index')
             ->with('success', 'Transaksi berhasil dihapus');
     }
+
+    public function cetakStruk($id)
+    {
+        // Ambil data transaksi beserta relasi detail dan produknya
+        $penjualan = Penjualan::with('itemPenjualan.produk')->findOrFail($id);
+
+        return view('penjualan.cetak', compact('penjualan'));
+    }
+    
 }

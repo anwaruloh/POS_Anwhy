@@ -45,5 +45,6 @@ Route::middleware('auth')->group(function () {
         Route::resource('/penjualan', PenjualanController::class);
         Route::resource('/itempenjualan', ItemPenjualanController::class);
         Route::delete('/itempenjualan/{id}', [ItemPenjualanController::class, 'destroy'])->name('itempenjualan.destroy');
+        Route::get('/penjualan/{id}/cetak', [PenjualanController::class, 'cetakStruk'])->name('penjualan.cetak');
     });
 });
