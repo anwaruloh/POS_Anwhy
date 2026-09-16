@@ -1,0 +1,12 @@
+php -v 8.4.13
+laravel (none)
+composer install/update
+npm install
+cp .env.example .env
+php artisan key:ganerate
+php artisan storage:link
+php artisan config:clear
+
+git clone https://github.com/anwaruloh/POS_Anwhy.git
+import database
+run all
