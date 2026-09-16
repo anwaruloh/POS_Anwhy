@@ -107,8 +107,8 @@
                                                 class="form-control input-qty" 
                                                 value="{{ $item->kuantitas }}" 
                                                 min="1" 
-                                                max="{{ $item->produk->stok }}" 
-                                                data-stok="{{ $item->produk->stok }}"
+                                                max="{{ $item->produk->stok ?? 0}}" 
+                                                data-stok="{{ $item->produk->stok ?? 0}}"
                                                 onchange="checkStok(this)">
                                             </form>
                                         </td>
@@ -142,7 +142,7 @@
                     </table>
                 </div>
 
-                {{-- Footer & Action Form --}}
+               {{-- Footer & Action Form --}}
                 <div class="card-footer bg-light p-4 border-top">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <span class="text-muted small fw-semibold">Total Pembayaran</span>
@@ -152,17 +152,41 @@
                     </div>
 
                     @if(isset($sale) && $sale->id && $sale->itemPenjualan->count() > 0)
-                        <form method="POST" action="{{ route('penjualan.update', $sale->id) }}">
+                        <form method="POST" action="{{ route('penjualan.update', $sale->id) }}" id="form-checkout">
                             @csrf
                             @method('PUT')
-                            
+
                             <div class="mb-3">
-                                <select name="payment_method" class="form-select border-0 shadow-none bg-white py-2 rounded-3 text-dark small" required>
+                                <select name="payment_method" id="payment-method" class="form-select border-0 shadow-none bg-white py-2 rounded-3 text-dark small" required>
                                     <option value="" disabled selected>-- Pilih Metode Pembayaran --</option>
                                     <option value="CASH">Cash (Tunai)</option>
                                     <option value="QRIS">QRIS</option>
-                                    <option value="TRANSFER">Transfer Bank</option>
                                 </select>
+                            </div>
+
+                            {{-- Input Uang Dibayar (muncul hanya jika CASH) --}}
+                            <div class="mb-3" id="wrapper-uang-dibayar" style="display:none;">
+                                <label class="form-label small text-muted fw-semibold">Uang Dibayar</label>
+                                <input type="number" id="uang-dibayar" name="uang_dibayar"
+                                    class="form-control border-0 shadow-none bg-white py-2 rounded-3"
+                                    placeholder="Masukkan jumlah uang...">
+
+                                <div class="d-flex justify-content-between mt-2 px-1">
+                                    <span class="small text-muted">Kembalian</span>
+                                    <span class="small fw-bold" id="kembalian">Rp 0</span>
+                                </div>
+                            </div>
+
+                            {{-- QR Code untuk QRIS (muncul hanya jika QRIS) --}}
+                            <div class="mb-3 text-center" id="wrapper-qris" style="display:none;">
+                                <label class="form-label small text-muted fw-semibold d-block">Scan QR untuk Bayar</label>
+                                <img src="{{ asset('images/images.jpg') }}" 
+                                    alt="QRIS" 
+                                    class="img-fluid rounded-3 border" 
+                                    style="max-width: 220px;">
+                                <div class="small text-muted mt-2">
+                                    Total: <span class="fw-bold text-dark">Rp {{ number_format(isset($sale) ? ($sale->total_pembayaran ?? 0) : 0, 0, ',', '.') }}</span>
+                                </div>
                             </div>
 
                             <div class="d-flex flex-column gap-2">
@@ -186,7 +210,6 @@
                         </button>
                     @endif
                 </div>
-
             </div>
         </div>
     </div>
@@ -207,41 +230,97 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
-// 1. Fungsi untuk Filter & Pencarian Produk
-function filterProduk() {
-    let keyword = $('#search-produk').val();
-    let kategoriId = $('#filter-kategori').val();
+$(document).ready(function () {
 
-    console.log("Mencari data -> Keyword:", keyword, "Kategori ID:", kategoriId);
+    // 1. Filter & Pencarian Produk
+    window.filterProduk = function () {
+        let keyword = $('#search-produk').val();
+        let kategoriId = $('#filter-kategori').val();
 
-    $.ajax({
-        url: "{{ route('penjualan.create') }}",
-        type: "GET",
-        data: { 
-            search: keyword, 
-            kategori_id: kategoriId 
-        },
-        success: function(response) {
-            console.log("AJAX Berhasil!");
-            $('#container-produk').html(response);
-        },
-        error: function(xhr, status, error) {
-            console.error("AJAX Error:", error, xhr.responseText);
+        $.ajax({
+            url: "{{ route('penjualan.create') }}",
+            type: "GET",
+            data: { search: keyword, kategori_id: kategoriId },
+            success: function (response) {
+                $('#container-produk').html(response);
+            },
+            error: function (xhr, status, error) {
+                console.error("AJAX Error:", error, xhr.responseText);
+            }
+        });
+    };
+
+    // 2. Validasi Stok
+    window.checkStok = function (input) {
+        let maxStok = parseInt($(input).attr('max')) || parseInt($(input).data('stok'));
+        let inputQty = parseInt($(input).val());
+
+        if (inputQty > maxStok) {
+            alert("Jumlah melebihi stok! Stok maksimum yang tersedia adalah " + maxStok);
+            $(input).val(maxStok);
+        } else if (inputQty < 1 || isNaN(inputQty)) {
+            $(input).val(1);
+        }
+    };
+
+    // 3. Uang Dibayar, Kembalian & QRIS
+    const totalPembayaran = {{ (int) (isset($sale) ? ($sale->total_pembayaran ?? 0) : 0) }};
+
+    const $paymentMethod = $('#payment-method');
+    const $wrapperUang   = $('#wrapper-uang-dibayar');
+    const $wrapperQris   = $('#wrapper-qris');
+    const $uangDibayar   = $('#uang-dibayar');
+    const $kembalian     = $('#kembalian');
+
+    function checkPaymentMethod() {
+        const metode = $paymentMethod.val();
+
+        if (metode === 'CASH') {
+            $wrapperUang.show();
+            $wrapperQris.hide();
+            $uangDibayar.prop('required', true);
+        } else if (metode === 'QRIS') {
+            $wrapperUang.hide();
+            $wrapperQris.show();
+            $uangDibayar.prop('required', false).val('');
+            $kembalian.text('Rp 0').removeClass('text-danger text-success');
+        } else {
+            $wrapperUang.hide();
+            $wrapperQris.hide();
+            $uangDibayar.prop('required', false).val('');
+            $kembalian.text('Rp 0').removeClass('text-danger text-success');
+        }
+    }
+
+    function hitungKembalian() {
+        const uang  = parseInt($uangDibayar.val()) || 0;
+        const hasil = uang - totalPembayaran;
+
+        if (uang === 0) {
+            $kembalian.text('Rp 0').removeClass('text-danger text-success');
+        } else if (hasil >= 0) {
+            $kembalian.text('Rp ' + hasil.toLocaleString('id-ID'))
+                      .removeClass('text-danger').addClass('text-success');
+        } else {
+            $kembalian.text('Uang Kurang (Rp ' + Math.abs(hasil).toLocaleString('id-ID') + ')')
+                      .removeClass('text-success').addClass('text-danger');
+        }
+    }
+
+    $('#form-checkout').on('submit', function (e) {
+        const action = $(document.activeElement).val();
+        if (action === 'checkout' && $paymentMethod.val() === 'CASH') {
+            const uang = parseInt($uangDibayar.val()) || 0;
+            if (uang < totalPembayaran) {
+                e.preventDefault();
+                alert('Uang yang dibayarkan kurang dari total pembayaran!');
+            }
         }
     });
-}
 
-// 2. Fungsi Validasi Stok (Harus Sejajar/Di Luar filterProduk)
-function checkStok(input) {
-    let maxStok = parseInt($(input).attr('max')) || parseInt($(input).data('stok'));
-    let inputQty = parseInt($(input).val());
+    $paymentMethod.on('change', checkPaymentMethod);
+    $uangDibayar.on('input', hitungKembalian);
 
-    if (inputQty > maxStok) {
-        alert("Jumlah melebihi stok! Stok maksimum yang tersedia adalah " + maxStok);
-        $(input).val(maxStok); // Riset nilai ke stok maksimal
-        return false;
-    } else if (inputQty < 1 || isNaN(inputQty)) {
-        $(input).val(1); // Riset ke 1 jika input kosong atau kurang dari 1
-    }
-}
+    checkPaymentMethod(); // jalankan saat halaman dimuat
+});
 </script>

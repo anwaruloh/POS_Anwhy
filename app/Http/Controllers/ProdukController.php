@@ -83,7 +83,7 @@ class ProdukController extends Controller
         // Simpan data produk baru ke database
         Produk::create($data);
 
-        return redirect()->route('produk.index')->with('success', 'Produk berhasil ditambahkan!');
+        return redirect()->route('admin.produk.index')->with('success', 'Produk berhasil ditambahkan!');
     }
 
     /**
