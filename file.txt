@@ -10,3 +10,5 @@ php artisan config:clear
 git clone https://github.com/anwaruloh/POS_Anwhy.git
 import database
 run all
+
+151 & 84

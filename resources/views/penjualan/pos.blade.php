@@ -109,7 +109,7 @@
                                                 min="1" 
                                                 max="{{ $item->produk->stok ?? 0}}" 
                                                 data-stok="{{ $item->produk->stok ?? 0}}"
-                                                onchange="checkStok(this)">
+                                                onchange="submitQtyChange(this)">
                                             </form>
                                         </td>
                                         <td class="fw-bold text-dark small">
@@ -144,10 +144,27 @@
 
                {{-- Footer & Action Form --}}
                 <div class="card-footer bg-light p-4 border-top">
+                    @php
+                        $subtotalKeranjang = isset($sale) ? $sale->itemPenjualan->sum('subtotal') : 0;
+                        $diskonKeranjang = $subtotalKeranjang > 1_000_000 ? $subtotalKeranjang * 0.1 : 0;
+                        $totalAkhir = max($subtotalKeranjang - $diskonKeranjang, 0);
+                    @endphp
+
+                    @if($subtotalKeranjang > 1_000_000)
+                        <div class="d-flex justify-content-between align-items-center mb-2 small">
+                            <span class="text-muted">Subtotal</span>
+                            <span class="text-muted">Rp {{ number_format($subtotalKeranjang, 0, ',', '.') }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3 small">
+                            <span class="text-success fw-semibold">Diskon 10%</span>
+                            <span class="text-success fw-semibold">- Rp {{ number_format($diskonKeranjang, 0, ',', '.') }}</span>
+                        </div>
+                    @endif
+
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <span class="text-muted small fw-semibold">Total Pembayaran</span>
                         <span class="fs-4 fw-bold text-success">
-                            Rp {{ number_format(isset($sale) ? ($sale->total_pembayaran ?? 0) : 0, 0, ',', '.') }}
+                            Rp {{ number_format(isset($sale) ? ($sale->total_pembayaran ?? $totalAkhir) : $totalAkhir, 0, ',', '.') }}
                         </span>
                     </div>
 
@@ -255,11 +272,26 @@ $(document).ready(function () {
         let maxStok = parseInt($(input).attr('max')) || parseInt($(input).data('stok'));
         let inputQty = parseInt($(input).val());
 
+        if (isNaN(inputQty) || inputQty < 1) {
+            $(input).val(1);
+            return false;
+        }
+
         if (inputQty > maxStok) {
             alert("Jumlah melebihi stok! Stok maksimum yang tersedia adalah " + maxStok);
             $(input).val(maxStok);
-        } else if (inputQty < 1 || isNaN(inputQty)) {
-            $(input).val(1);
+        }
+
+        return true;
+    };
+
+    window.submitQtyChange = function (input) {
+        if (!checkStok(input)) {
+            return;
+        }
+
+        if (input.form) {
+            input.form.submit();
         }
     };
 

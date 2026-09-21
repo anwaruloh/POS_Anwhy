@@ -16,7 +16,7 @@
                 {{-- Card Login --}}
                 <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
                     <div class="text-center mb-4">
-                        <h3 class="fw-bold text-primary mb-1">POS Anwar</h3>
+                        <h3 class="fw-bold text-primary mb-1">RL Garage</h3>
                         <p class="text-muted small">Silakan masuk ke akun Anda</p>
                     </div>
 

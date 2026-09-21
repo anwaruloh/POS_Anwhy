@@ -1,6 +1,6 @@
 @extends('layout.app')
 
-@section('title', 'Dashboard')
+@section('title', 'Beranda')
 
 @section('content')
 @php
@@ -9,7 +9,7 @@
 
 <div class="container-fluid p-0">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold mb-0">Dashboard Ringkasan</h4>
+        <h4 class="fw-bold mb-0">Ringkasan Beranda</h4>
         <span class="text-muted small">{{ \Carbon\Carbon::now()->isoFormat('D MMMM Y') }}</span>
     </div>
     {{-- 1. TAMPILAN KHUSUS ADMIN (TETAP SEPERTI SEMULA / LENGKAP)--}}

@@ -135,6 +135,7 @@ class PenjualanController extends Controller
         // jika tombol draft yang diklik
         if ($action === 'draft') {
             $sale->update([
+                'total_pembayaran' => Penjualan::calculateTotalPembayaran($sale->itemPenjualan()->sum('subtotal')),
                 'status' => 'DRAFT', // atau 'OPEN' jika enum database Anda belum diupdate ke DRAFT
                 'metode_pembayaran' => $request->payment_method ?? 'CASH'
             ]);
@@ -145,6 +146,7 @@ class PenjualanController extends Controller
         // jika tombol checkout yang diklik
         if ($action === 'checkout') {
             $sale->update([
+                'total_pembayaran' => Penjualan::calculateTotalPembayaran($sale->itemPenjualan()->sum('subtotal')),
                 'status' => 'COMPLETED',
                 'metode_pembayaran' => $request->payment_method
             ]);

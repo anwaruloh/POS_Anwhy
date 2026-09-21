@@ -92,7 +92,7 @@ class ItemPenjualanController extends Controller
                 // 6. Hitung ulang Total Pembayaran Penjualan secara akurat
                 $totalPembayaran = ItemPenjualan::where('penjualan_id', $sale->id)->sum('subtotal');
                 $sale->update([
-                    'total_pembayaran' => $totalPembayaran
+                    'total_pembayaran' => Penjualan::calculateTotalPembayaran($totalPembayaran)
                 ]);
             });
 
@@ -123,6 +123,9 @@ class ItemPenjualanController extends Controller
      */
     public function update(Request $request, ItemPenjualan $itempenjualan)
     {
+        $quantity = (int) $request->input('quantity', $request->input('qty', 1));
+        $request->merge(['quantity' => $quantity]);
+
         $request->validate([
             'quantity' => 'required|integer|min:1'
         ]);
@@ -133,33 +136,34 @@ class ItemPenjualanController extends Controller
 
             $selisih = $request->quantity - $itempenjualan->kuantitas;
 
-            // 🔍 Jika qty bertambah -> kurangi stok
+            //  Jika qty bertambah -> kurangi stok
             if ($selisih > 0) {
                 if ($produk->stok < $selisih) {
-                    return redirect()->route('penjualan.create')->with('error', 'Stok tidak mencukupi');
+                    throw new \Exception('Stok tidak mencukupi untuk produk ' . ($produk->nama ?? 'terpilih') . '.');
                 }
                 $produk->decrement('stok', $selisih);
             }
 
-            // 🔍 Jika qty berkurang -> kembalikan stok
+            //  Jika qty berkurang -> kembalikan stok
             if ($selisih < 0) {
                 $produk->increment('stok', abs($selisih));
             }
 
-            // 🔄 Update item
+            //  Update item
             $itempenjualan->update([
                 'kuantitas' => $request->quantity,
                 'subtotal' => $request->quantity * $itempenjualan->harga_satuan
             ]);
 
-            // 🔄 Update total penjualan
+            //  Update total penjualan
             $itempenjualan->penjualan->update([
-                'total_pembayaran' =>
-                $itempenjualan->penjualan->itemPenjualan()->sum('subtotal')
+                'total_pembayaran' => Penjualan::calculateTotalPembayaran(
+                    $itempenjualan->penjualan->itemPenjualan()->sum('subtotal')
+                )
             ]);
         });
 
-        return back();
+        return back()->with('success', 'Qty berhasil diperbarui.');
     }
     /**
      * Remove the specified resource from storage.
@@ -186,7 +190,7 @@ class ItemPenjualanController extends Controller
                 // 4. Hitung ulang total pembayaran pada transaksi
                 $totalPembayaran = ItemPenjualan::where('penjualan_id', $sale->id)->sum('subtotal');
                 $sale->update([
-                    'total_pembayaran' => $totalPembayaran
+                    'total_pembayaran' => Penjualan::calculateTotalPembayaran($totalPembayaran)
                 ]);
             });
 

@@ -2,8 +2,8 @@
     
     <!-- Brand / Logo Aplikasi -->
     <a href="/" class="d-flex align-items-center gap-2 text-white text-decoration-none px-2 py-3 mb-3 border-bottom border-secondary border-opacity-25">
-        <span class="fs-4">🛒</span>
-        <span class="fs-5 fw-bold tracking-wide">POS Kasir</span>
+        <span class="fs-4"></span>
+        <span class="fs-5 fw-bold tracking-wide">RL Garage</span>
     </a>
 
     @auth
