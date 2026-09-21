@@ -45,4 +45,15 @@ class Penjualan extends Model
 
         return self::calculateTotalPembayaran($subtotal);
     }
+
+    public function getTotalHppAttribute(): int
+    {
+        return (int) $this->itemPenjualan
+            ->sum(fn ($item) => ($item->kuantitas ?? 0) * ($item->produk?->harga_beli ?? 0));
+    }
+
+    public function getKeuntunganAttribute(): int
+    {
+        return (int) (($this->total_pembayaran ?? 0) - $this->total_hpp);
+    }
 }

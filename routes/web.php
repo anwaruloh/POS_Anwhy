@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/users/destroy/{user}', [UserController::class, 'destroy'])->name('users.destroy');
         Route::resource('/produk', ProdukController::class);
         Route::resource('kategori', KategoriController::class)->except(['create', 'show', 'edit', 'update']);
+        Route::get('/keuntungan', [DashboardController::class, 'keuntungan'])->name('keuntungan.index');
     });
 
     // Group Produk (Bisa diakses Admin & Kasir)

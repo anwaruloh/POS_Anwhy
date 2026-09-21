@@ -62,4 +62,15 @@ class DashboardController extends Controller
     {
         return view('about.index');
     }
+
+    public function keuntungan()
+    {
+        $sales = Penjualan::with('itemPenjualan.produk')
+            ->where('status', 'COMPLETED')
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+
+        return view('keuntungan.index', compact('sales'));
+    }
 }

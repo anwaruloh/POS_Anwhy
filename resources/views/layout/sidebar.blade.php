@@ -52,6 +52,7 @@
                         <span>Data Produk</span>
                     </a>
                 </li>
+
             @endif
         @endauth
 
@@ -73,18 +74,14 @@
             </a>
         </li>
 
-         {{-- @auth
-            @if($userRole === 'admin')
-                {{-- 7. Suplier (Khusus Admin)
-                <li class="nav-item">
-                    <a href="{{ route('suplier.index') }}" 
-                        class="nav-link d-flex align-items-center gap-2 {{ request()->routeIs('suplier.index*') ? 'active' : '' }}">
-                        <i class="bi bi-truck fs-5"></i>
-                        <span>Suplier</span>
-                    </a>
-                </li>
-            @endif
-        @endauth --}}
+                {{-- 8. Riwayat Keuntungan --}}
+        <li class="nav-item">
+            <a href="{{ route('admin.keuntungan.index') }}" 
+               class="nav-link d-flex align-items-center gap-2 {{ request()->routeIs('admin.keuntungan.index*') ? 'active' : '' }}">
+                <i class="bi bi-cash-stack fs-5"></i>
+                <span>Riwayat Keuntungan</span>
+            </a>
+        </li>
 
     </ul>
 
